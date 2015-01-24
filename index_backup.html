@@ -14,80 +14,10 @@
 	</style>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
 	<script src='gifshot/build/gifshot.js'></script>
-	<script src="Hyperlapse.js"></script>
-	<script src="three.min.js"></script>
-	<script src="GSVPano.min.js"></script>
 	<script>
-
-// Simple
-var _points = [];
-
-function init() {
-	var hyperlapse = new Hyperlapse(document.getElementById('pano'), {
-		zoom: 1,
-		elevation: 50
-	});
-
-	// Google Maps API stuff here...
-	var directions_service = new google.maps.DirectionsService();
-
-	var route = {
-		request:{
-			origin: new google.maps.LatLng(1.293580, 103.775204),
-			destination: new google.maps.LatLng(1.294504, 103.772841),
-			travelMode: google.maps.DirectionsTravelMode.DRIVING
-		}
-	};
-
-	directions_service.route(route.request, function(response, status) {
-		if (status == google.maps.DirectionsStatus.OK) {
-			window._points = hyperlapse.generate( {route:response} );
-		} else {
-			console.log(status);
-		}
-	});
-
-	function generateHeading(points){
-		var headings = [];
-		console.log(points);
-		console.log(points.length)
-
-		for (var i = 0; i <= points.length - 1; i++){
-			var start = new google.maps.LatLng(points[i]['k'], points[i]['D']);
-			var end = new google.maps.LatLng(points[i+1]['k'], points[i]['D']);
-			var heading = google.maps.geometry.spherical.computeHeading(start, end);
-
-			console.log(heading);
-
-			headings.push(heading);
-		} 
-		//console.log(headings);
-	}
-
-	//generateHeading(_points);
-
-	function generateUrl(){
-		var string = "https://maps.googleapis.com/maps/api/streetview?size=400x400&location=1.294504,%20103.772842&heading=24.2948085497419"
-
-
-
-	}
-
-}
-
-window.onload = init;
-
-
-
-
-
-
-
 /*
  * Click the map to set a new location for the Street View camera.
  */
-
-/*
 
 var map;
 var berkeley = new google.maps.LatLng(1.294504, 103.772841);
@@ -149,7 +79,7 @@ function processSVData(data, status) {
   }
 }
 
-google.maps.event.addDomListener(window, 'load', initialize);*/
+google.maps.event.addDomListener(window, 'load', initialize);
 
 
 	</script>

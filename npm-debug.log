@@ -1,0 +1,83 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'install', 'hyperlapse' ]
+2 info using npm@1.4.9
+3 info using node@v0.10.28
+4 warn package.json mx@ No description
+5 warn package.json mx@ No repository field.
+6 warn package.json mx@ No README data
+7 verbose readDependencies using package.json deps
+8 verbose cache add [ 'hyperlapse', null ]
+9 verbose cache add name=undefined spec="hyperlapse" args=["hyperlapse",null]
+10 verbose parsed url { protocol: null,
+10 verbose parsed url   slashes: null,
+10 verbose parsed url   auth: null,
+10 verbose parsed url   host: null,
+10 verbose parsed url   port: null,
+10 verbose parsed url   hostname: null,
+10 verbose parsed url   hash: null,
+10 verbose parsed url   search: null,
+10 verbose parsed url   query: null,
+10 verbose parsed url   pathname: 'hyperlapse',
+10 verbose parsed url   path: 'hyperlapse',
+10 verbose parsed url   href: 'hyperlapse' }
+11 silly lockFile 81ae3d28-hyperlapse hyperlapse
+12 verbose lock hyperlapse /Users/mx/.npm/81ae3d28-hyperlapse.lock
+13 silly lockFile 81ae3d28-hyperlapse hyperlapse
+14 silly lockFile 81ae3d28-hyperlapse hyperlapse
+15 verbose addNamed [ 'hyperlapse', '' ]
+16 verbose addNamed [ null, '*' ]
+17 silly lockFile 0defd775-hyperlapse hyperlapse@
+18 verbose lock hyperlapse@ /Users/mx/.npm/0defd775-hyperlapse.lock
+19 silly addNameRange { name: 'hyperlapse', range: '*', hasData: false }
+20 verbose url raw hyperlapse
+21 verbose url resolving [ 'https://registry.npmjs.org/', './hyperlapse' ]
+22 verbose url resolved https://registry.npmjs.org/hyperlapse
+23 info trying registry request attempt 1 at 19:00:31
+24 http GET https://registry.npmjs.org/hyperlapse
+25 http 404 https://registry.npmjs.org/hyperlapse
+26 verbose headers { date: 'Sat, 24 Jan 2015 11:00:33 GMT',
+26 verbose headers   server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+26 verbose headers   'content-type': 'application/json',
+26 verbose headers   'cache-control': 'max-age=0',
+26 verbose headers   'content-length': '52',
+26 verbose headers   'accept-ranges': 'bytes',
+26 verbose headers   via: '1.1 varnish',
+26 verbose headers   age: '0',
+26 verbose headers   'x-served-by': 'cache-sn88-SIN',
+26 verbose headers   'x-cache': 'MISS',
+26 verbose headers   'x-cache-hits': '0',
+26 verbose headers   'x-timer': 'S1422097232.449012,VS0,VE1086',
+26 verbose headers   'keep-alive': 'timeout=10, max=50',
+26 verbose headers   connection: 'Keep-Alive' }
+27 silly registry.get cb [ 404,
+27 silly registry.get   { date: 'Sat, 24 Jan 2015 11:00:33 GMT',
+27 silly registry.get     server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+27 silly registry.get     'content-type': 'application/json',
+27 silly registry.get     'cache-control': 'max-age=0',
+27 silly registry.get     'content-length': '52',
+27 silly registry.get     'accept-ranges': 'bytes',
+27 silly registry.get     via: '1.1 varnish',
+27 silly registry.get     age: '0',
+27 silly registry.get     'x-served-by': 'cache-sn88-SIN',
+27 silly registry.get     'x-cache': 'MISS',
+27 silly registry.get     'x-cache-hits': '0',
+27 silly registry.get     'x-timer': 'S1422097232.449012,VS0,VE1086',
+27 silly registry.get     'keep-alive': 'timeout=10, max=50',
+27 silly registry.get     connection: 'Keep-Alive' } ]
+28 silly lockFile 0defd775-hyperlapse hyperlapse@
+29 silly lockFile 0defd775-hyperlapse hyperlapse@
+30 error 404 404 Not Found: hyperlapse
+30 error 404
+30 error 404 'hyperlapse' is not in the npm registry.
+30 error 404 You should bug the author to publish it
+30 error 404 It was specified as a dependency of 'mx'
+30 error 404
+30 error 404 Note that you can also install from a
+30 error 404 tarball, folder, or http url, or git url.
+31 error System Darwin 14.1.0
+32 error command "node" "/usr/local/bin/npm" "install" "hyperlapse"
+33 error cwd /Users/mx/hacknroll/foobar
+34 error node -v v0.10.28
+35 error npm -v 1.4.9
+36 error code E404
+37 verbose exit [ 1, true ]

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html> 
+<head> 
+	<title>Simple Example</title> 
+
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false" type="text/javascript"></script> 
+	<script src="js/three.min.js"></script>
+	<script src="js/GSVPano.js"></script>
+	<script src="../src/Hyperlapse.js"></script>
+	<script> 
+
+		function init() {
+
+			var coordinates = [];
+
+			var hyperlapse = new Hyperlapse(document.getElementById('pano'), {
+				zoom: 1,
+				elevation: 50
+			});
+
+			hyperlapse.onError = function(e) {
+				console.log(e);
+			};
+
+			hyperlapse.onRouteComplete = function(e) {
+				hyperlapse.load();
+				// for (var i = 0; i < e.points.length; i++) {
+				// 	console.log(e.points[i].location.lat(), e.points[i].location.lng());
+				// };
+				
+			};
+
+			hyperlapse.onLoadComplete = function(e) {
+				hyperlapse.play();
+			};
+
+			// Google Maps API stuff here...
+			var directions_service = new google.maps.DirectionsService();
+
+			var route = {
+				request:{
+					origin: new google.maps.LatLng(1.293580, 103.775204),
+					destination: new google.maps.LatLng(1.294504, 103.772841),
+					travelMode: google.maps.DirectionsTravelMode.DRIVING
+				}
+			};
+
+			directions_service.route(route.request, function(response, status) {
+				if (status == google.maps.DirectionsStatus.OK) {
+					var points = hyperlapse.generate( {route:response} );
+					
+				} else {
+					console.log(status);
+				}
+			});
+
+		}
+
+		window.onload = init;
+		
+	</script> 
+</head> 
+<body> 
+	<div id="pano"></div>
+</body> 
+</html>
