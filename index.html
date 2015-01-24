@@ -60,22 +60,14 @@ function processSVData(data, status) {
 	panorama.setPano(data.location.pano);
 
 	var heading = google.maps.geometry.spherical.computeHeading(berkeley, ending);
+	console.log(heading);
 
 	panorama.setPov({
 	  heading: heading,
 	  pitch: 0
 	});
+
 	panorama.setVisible(true);
-
-	google.maps.event.addListener(panorama, 'links_changed', function() {
-	var links =  panorama.getLinks();
-
-	panorama.setPov({                   
-		heading: links[0].heading,
-		pitch: 0,
-		zoom: 1
-		});
-	});
 
   } else {
 	alert('Street View data not found for this location.');
