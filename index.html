@@ -1,178 +1,271 @@
-
-
 <!DOCTYPE html>
-<html>
-  <head>
-	<meta charset="utf-8">
-	<title>Directly accessing Street View data</title>
-	<style>
-	  html, body, #map-canvas {
-		height: 100%;
-		margin: 0px;
-		padding: 0px
-	  }
-	</style>
-	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+<html> 
+<head>
+	<title>GoGIF</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<!-- IMPORTS -->
+	<link rel="stylesheet" href="foundation-5.5.0/css/foundation.css" />
+	<link rel="stylesheet" href="foundation-5.5.0/css/app.css" />
+	<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+	<script src="jquery-1.11.2.min.js"></script>
 	<script src='gifshot/build/gifshot.js'></script>
-	<script src="Hyperlapse.js"></script>
-	<script src="three.min.js"></script>
-	<script src="GSVPano.min.js"></script>
-	<script>
-
-// Simple
-var _points = [];
-
-function init() {
-	var hyperlapse = new Hyperlapse(document.getElementById('pano'), {
-		zoom: 1,
-		elevation: 50
-	});
-
-	// Google Maps API stuff here...
-	var directions_service = new google.maps.DirectionsService();
-
-	var route = {
-		request:{
-			origin: new google.maps.LatLng(1.293580, 103.775204),
-			destination: new google.maps.LatLng(1.294504, 103.772841),
-			travelMode: google.maps.DirectionsTravelMode.DRIVING
-		}
-	};
-
-	directions_service.route(route.request, function(response, status) {
-		if (status == google.maps.DirectionsStatus.OK) {
-			window._points = hyperlapse.generate( {route:response} );
-		} else {
-			console.log(status);
-		}
-	});
-
-	function generateHeading(points){
-		var headings = [];
-		console.log(points);
-		console.log(points.length)
-
-		for (var i = 0; i <= points.length - 1; i++){
-			var start = new google.maps.LatLng(points[i]['k'], points[i]['D']);
-			var end = new google.maps.LatLng(points[i+1]['k'], points[i]['D']);
-			var heading = google.maps.geometry.spherical.computeHeading(start, end);
-
-			console.log(heading);
-
-			headings.push(heading);
-		} 
-		//console.log(headings);
-	}
-
-	//generateHeading(_points);
-
-	function generateUrl(){
-		var string = "https://maps.googleapis.com/maps/api/streetview?size=400x400&location=1.294504,%20103.772842&heading=24.2948085497419"
+	<script type="text/javascript"
+	  src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
 
 
-
-	}
-
-}
-
-window.onload = init;
-
-
-
-
-
-
-
-/*
- * Click the map to set a new location for the Street View camera.
- */
-
-/*
-
-var map;
-var berkeley = new google.maps.LatLng(1.294504, 103.772841);
-var ending = new google.maps.LatLng(1.294865, 103.773004);
-var sv = new google.maps.StreetViewService();
-
-var panorama;
-
-function initialize() {
-
-  panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'));
-
-  // Set up the map
-  var mapOptions = {
-	center: berkeley,
-	zoom: 16,
-	streetViewControl: false
-  };
-  map = new google.maps.Map(document.getElementById('map-canvas'),
-	  mapOptions);
-
-  // Set the initial Street View camera to the center of the map
-  sv.getPanoramaByLocation(berkeley, 50, processSVData);
-
-  // Look for a nearby Street View panorama when the map is clicked.
-  // getPanoramaByLocation will return the nearest pano when the
-  // given radius is 50 meters or less.
-  google.maps.event.addListener(map, 'click', function(event) {
-	  sv.getPanoramaByLocation(event.latLng, 50, processSVData);
-  });
-}
-
-function processSVData(data, status) {
-
-  if (status == google.maps.StreetViewStatus.OK) {
-	var marker = new google.maps.Marker({
-	  position: data.location.latLng,
-	  map: map,
-	  title: data.location.description
-	});
-
-	panorama.setPano(data.location.pano);
-
-	var heading = google.maps.geometry.spherical.computeHeading(berkeley, ending);
-	console.log(heading);
-
-	panorama.setPov({
-	  heading: heading,
-	  pitch: 0
-	});
-
-	var temp = "https://maps.googleapis.com/maps/api/streetview?size=400x400&location=";
+	<style type="text/css">
+		html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
+	</style>
 	
-	panorama.setVisible(true);
+	<script>
+		var _max_points = 100;
+		var _distance_between_points = 5;
+		
+		Number.prototype.toRad = function() {
+			return this * Math.PI / 180;
+		};
+
+		Number.prototype.toDeg = function() {
+			return this * 180 / Math.PI;
+		};
+
+		var pointOnLine = function(t, a, b) {
+			
+			var lat1 = a.lat().toRad(), lon1 = a.lng().toRad();
+			var lat2 = b.lat().toRad(), lon2 = b.lng().toRad();
+		
+			x = lat1 + t * (lat2 - lat1);
+			y = lon1 + t * (lon2 - lon1);
+
+			return new google.maps.LatLng(x.toDeg(), y.toDeg());
+		};
+
+		var handleDirectionsRoute = function(response) {
+			var _raw_points = [];
+				var route = response.routes[0];
+				var path = route.overview_path;
+				var legs = route.legs;
+
+				var total_distance = 0;
+				for(var i=0; i<legs.length; ++i) {
+					total_distance += legs[i].distance.value;
+				}
+
+				var segment_length = total_distance/_max_points;
+				_d = (segment_length < _distance_between_points) ? _d = _distance_between_points : _d = segment_length;
+
+				var d = 0;
+				var r = 0;
+				var a, b;
+
+				for(i=0; i<path.length; i++) {
+					if(i+1 < path.length) {
+
+						a = path[i];
+						b = path[i+1];
+						d = google.maps.geometry.spherical.computeDistanceBetween(a, b);
+
+						if(r > 0 && r < d) {
+							a = pointOnLine(r/d, a, b);
+							d = google.maps.geometry.spherical.computeDistanceBetween(a, b);
+							_raw_points.push(a);
+
+							r = 0;
+						} else if(r > 0 && r > d) {
+							r -= d;
+						}
+
+						if(r === 0) {
+							var segs = Math.floor(d/_d);
+
+							if(segs > 0) {
+								for(var j=0; j<segs; j++) {
+									var t = j/segs;
+
+									if( t>0 || (t+i)===0  ) { // not start point
+										var way = pointOnLine(t, a, b);
+										_raw_points.push(way);
+									}
+								}
+
+								r = d-(_d*segs);
+							} else {
+								r = _d*( 1-(d/_d) );
+							}
+						}
+
+					} else {
+						_raw_points.push(path[i]);
+					}
+				}
+				return _raw_points;
+			}
+		
+		function init() {
+
+			// Map Markers related
+			var mapOptions = {
+					center: { lat: 1.295831, lng: 103.776099},
+					zoom: 16
+				};
+			console.log($("#map-canvas").get(0));
+			console.log(document.getElementById('map-canvas'));
+			var map = new google.maps.Map($("#map-canvas").get(0),
+				mapOptions);
+
+			var startLatlng = new google.maps.LatLng(1.297209, 103.774039);
+			var endLatlng = new google.maps.LatLng(1.294822, 103.778459);
+
+			var start = new google.maps.Marker({
+				position: startLatlng,
+				map: map,
+				title:"Hello World!",
+				draggable: true,
+				title: 'Start',
+				icon: 'red_MarkerA.png'
+			 });
+
+			var end = new google.maps.Marker({
+				position: endLatlng,
+				map: map,
+				title:"Hello World!",
+				draggable: true,
+				title: 'Start',
+				icon: 'blue_MarkerB.png'
+			 });
+
+			google.maps.event.addListener(start, 'dragend', function(event) {
+				 //alert( 'Lat: ' + event.latLng.lat() + ' and Longitude is: ' + event.latLng.lng() );
+				 document.getElementById('startLatlng').innerHTML = '' + event.latLng.lat() + ', ' + event.latLng.lng();
+				 console.log(document.getElementById('startLatlng').innerHTML);
+
+			});
+
+			google.maps.event.addListener(end, 'dragend', function(event) {
+				 //alert( 'Lat: ' + event.latLng.lat() + ' and Longitude is: ' + event.latLng.lng() );
+				 document.getElementById('endLatlng').innerHTML = ' ' + event.latLng.lat() + ', ' + event.latLng.lng();
+			});			
+		}
+
+		function makeGif(){
+			$("#topBar").show();
+			var points = [];
+			var urls = [];
+
+			// Google Maps API stuff here...
+			var directions_service = new google.maps.DirectionsService();
+
+			var startArr = document.getElementById('startLatlng').innerHTML.split(',');
+			var endArr = document.getElementById('endLatlng').innerHTML.split(',');
+
+			var a = parseFloat(startArr[0]);
+			var b = parseFloat(startArr[1]);
+			var c = parseFloat(endArr[0]);
+			var d = parseFloat(endArr[1]);
+
+			console.log(a);
+			console.log(b);
+			console.log(c);
+			console.log(d);
 
 
-  } else {
-	alert('Street View data not found for this location.');
-  }
-}
+			var route = {
+				request:{
+					origin: new google.maps.LatLng(a, b),
+					destination: new google.maps.LatLng(c, d),
+					travelMode: google.maps.DirectionsTravelMode.DRIVING
+				}
+			};
+			
+			// All the functions bundled in here get executed
+			directions_service.route(route.request, function(response, status) {
+				if (status == google.maps.DirectionsStatus.OK) {
+					points = handleDirectionsRoute(response);
+					for (var i = 0; i < points.length - 1; i++){
+						var start = points[i];
+						var end = points[i+1];
+						var heading = google.maps.geometry.spherical.computeHeading(start, end);
+						urls.push("https://maps.googleapis.com/maps/api/streetview?&key=YOUR_API_KEY&size=400x400&location="
+							+ start.lat() + "," + start.lng() + "&heading=" + heading);
+					}
+					gifshot.createGIF({
+						'images': urls,
+						'interval': 0.15,
+						'numFrames': urls.length,
+						'gifWidth': 300,
+						'gifHeight': 300,
+					}, function(obj) {
+						if(!obj.error) {
+							var image = obj.image,
+							animatedImage = document.createElement('img');
+							animatedImage.src = image;
+							$('#status').text("There you go!");
+							$("#generatedGif").append(animatedImage);
+							//document.getElementById('generatedGif').appendChild(animatedImage);
+						}
+					});
+				} else {
+					console.log(status);
+				}
+			});
+		}
 
-google.maps.event.addDomListener(window, 'load', initialize);*/
+		function deleteGif(){
+			$("#generatedGif").empty();
+		}
 
+		google.maps.event.addDomListener(window, 'load', init);
+	</script> 
+</head> 
 
-	</script>
-  </head>
-  <body>
-	<div id="map-canvas" style="width: 45%; height: 100%;float:left"></div>
-	<div id="pano" style="width: 45%; height: 100%;float:left"></div>
-	<div id="writing">
+<body> 
+
+	<div class="row">
+		<div class="small-6 small-centered columns">
+			<h1>GoGIF</h1>
+		</div>
 	</div>
-	<!--<img src="https://maps.googleapis.com/maps/api/streetview?size=400x400&location=1.294504,%20103.772842&heading=24.2948085497419" alt="">-->
-  </body>
 
-  <script>
-	gifshot.createGIF({
-	'images': ['http://i.imgur.com/2OO33vX.jpg', 'http://i.imgur.com/qOwVaSN.png', 'http://i.imgur.com/Vo5mFZJ.gif']
-},function(obj) {
-	if(!obj.error) {
-		var image = obj.image,
-		animatedImage = document.createElement('img');
-		animatedImage.src = image;
-		document.body.appendChild(animatedImage);
-	}
-});
-  </script>
+	<div class="row" id="topBar" style="display:none;">
+		<div class="large-6 small-centered column panel">
+			<p id="status">Please wait:</p>
+			<div id="generatedGif"></div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="large-3 small-offset-3 columns">
+			<a href="#" class="small expand success button" onclick="makeGif();">Generate</a>
+		</div>
+		<div class="large-3 end columns">
+			<a href="#" class="small expand button alert" onclick="deleteGif()">Delete</a></div>
+		</div>
+	</div>
+
+	<div class="row" style="width:100%;height:100%">
+		<div class="large-6 small-centered columns" style="width:50%;height:70%">
+			<div id="map-canvas" style="height:100%;width:100%"></div>
+		</div>
+	</div>
+
+
+	
+	<div id="startLatlng" style="display:none">1.297209, 103.774039</div>
+	<div id="endLatlng" style="display:none">1.294822, 103.778459</div>
+
+	
+
+
+
+	
+</body>
 </html>
+
+
+
+
+
+
+
 
